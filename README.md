@@ -1,2 +1,2 @@
 # 0xhx.github.io
-My GitHub pages
+<center> My GitHub pages </center>
