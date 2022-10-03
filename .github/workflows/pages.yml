@@ -40,7 +40,7 @@ jobs:
         uses: actions/configure-pages@v2
       - name: Getfiles
         run: |
-          wget -k -m -np  https://www.quintype.com/
+          wget -q -k -m -np  https://www.quintype.com/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
