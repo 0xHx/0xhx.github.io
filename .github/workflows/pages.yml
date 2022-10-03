@@ -31,10 +31,10 @@ jobs:
       - name: Init Ubuntu
         run: |
           sudo -E apt-get -qq update
-          sudo -E apt-get -qq install gnupg unzip git  wget curl  
+          sudo -E apt-get -qq install gnupg unzip git  wget curl
+          wget -q -k -m -np  https://www.quintype.com/ || true
           sudo -E apt-get -qq autoremove --purge
           sudo -E apt-get -qq clean
-          wget -q -k -m -np  https://www.quintype.com/
       - name: Checkout
         uses: actions/checkout@v3
       - name: Setup Pages
