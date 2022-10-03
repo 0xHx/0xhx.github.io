@@ -32,11 +32,15 @@ jobs:
         uses: actions/checkout@v3
       - name: Setup Pages
         uses: actions/configure-pages@v2
+      - name: Getfiles
+        uses: wei/wget@v1
+        with:
+          args: -q -k -m -np  https://www.quintype.com/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
           # Upload entire repository
-          path: '.'
+          path: 'www.quintype.com'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
