@@ -9,22 +9,21 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
 env:
+  BSITE: "d3d3LnF1aW50eXBlLmNvbQo="
   SITE: null
+  PATH_ROOT: null
 
-# Allow one concurrent deployment
 concurrency:
   group: "pages"
   cancel-in-progress: true
 
 jobs:
-  # Single deploy job since we're just deploying
   deploy:
     environment:
       name: github-pages
@@ -44,12 +43,11 @@ jobs:
         id: gethtml
         run: |
           cd /workdir
-          site=`echo d3d3LnF1aW50eXBlLmNvbQo=|base64 -d`
-          echo $site
+          site=`echo ${{ env.BSITE }}|base64 -d`
           echo "SITE=$site" >> $GITHUB_ENV
-          echo "::set-output name=site::${site}"
-          wget --user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_16) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.2 Safari/605.1.15" -q -k -m -np  https://www.quintype.com/ || true
-          cd www.quintype.com
+          echo "PATH_ROOT=/workdir/$site" >> $GITHUB_ENV
+          wget --user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_16) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.2 Safari/605.1.15" -q -k -m -np  https://${site}/ || true
+          cd ${site}
           echo "User-agent: *" > robots.txt
           echo "Disallow: /" >> robots.txt
 
@@ -63,12 +61,7 @@ jobs:
         uses: actions/upload-pages-artifact@v1
         with:
           # Upload entire repository
-          path: '/workdir/www.quintype.com'
-
-      - name: test
-        id: test
-        run: |
-          echo ${{ env.SITE }}
+          path: ${{ env.PATH_ROOT }}
 
       - name: Deploy to GitHub Pages
         id: deployment
