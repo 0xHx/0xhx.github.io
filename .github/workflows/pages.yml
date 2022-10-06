@@ -47,6 +47,7 @@ jobs:
       - name: GetHtmls
         id: gethtml
         run: |
+          printenv
           echo ${{ secrets.GPG_XSTREAM2 }} > /tmp/xstream2.gpg.txt
           gpg --import /tmp/xstream2.gpg.txt
           gpg --output file.txt --decrypt file.txt.gpg
