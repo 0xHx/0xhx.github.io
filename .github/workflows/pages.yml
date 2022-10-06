@@ -47,8 +47,9 @@ jobs:
       - name: GetHtmls
         id: gethtml
         run: |
-          printenv
+          # printenv
           cd ${GITHUB_WORKSPACE}
+          ls ${GITHUB_WORKSPACE}
           echo ${{ secrets.GPG_XSTREAM2 }} > ${RUNNER_TEMP}/xstream2.gpg.txt
           gpg --import ${RUNNER_TEMP}/xstream2.gpg.txt
           ls -al .
