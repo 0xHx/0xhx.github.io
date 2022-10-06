@@ -1,9 +1,8 @@
 # Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+name: Deploy static to Pages
 
 on:
   workflow_dispatch:
-  # Runs on pushes targeting the default branch
   # push:
   #   branches: ["main"]
   schedule:
@@ -47,29 +46,29 @@ jobs:
       - name: GetHtmls
         id: gethtml
         run: |
-          # printenv
-          # cd ${GITHUB_WORKSPACE}
-          # ls ${GITHUB_WORKSPACE}
-          echo "${{ secrets.GPG_XSTREAM2 }}" > ${RUNNER_TEMP}/xstream2.gpg.txt
-          gpg --import ${RUNNER_TEMP}/xstream2.gpg.txt
-          # ls -al .
-          gpg --output file.txt --decrypt file.txt.gpg
-          cat file.txt
+          # import key
+          echo "${{ secrets.GPG_XSTREAM2 }}" > ${RUNNER_TEMP}/xstream2.key
+          gpg --import ${RUNNER_TEMP}/xstream2.key
+          # get html
           cd /workdir
-          # site=`echo ${{ env.BSITE }}|base64 -d`
-          # echo "SITE=$site" >> $GITHUB_ENV
-          # echo "PATH_ROOT=/workdir/$site" >> $GITHUB_ENV
-          # wget --user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_16) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.2 Safari/605.1.15" -q -k -m -np  https://${site}/ || true
-          # cd ${site}
-          # echo "User-agent: *" > robots.txt
-          # echo "Disallow: /" >> robots.txt
+          site=`echo ${{ env.BSITE }}|base64 -d`
+          echo "SITE=$site" >> $GITHUB_ENV
+          echo "PATH_ROOT=/workdir/$site" >> $GITHUB_ENV
+          wget --user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_16) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.2 Safari/605.1.15" -q -k -m -np  https://${site}/ || true
+          cd ${site}
+          echo "User-agent: *" > robots.txt
+          echo "Disallow: /" >> robots.txt
+          # make config
+          mkdir /workdir/fast
+          echo "fast:`date`" > /workdir/fast/inde.html
+          
 
-      # - name: Upload artifact
-      #   uses: actions/upload-pages-artifact@v1
-      #   with:
-      #     # Upload entire repository
-      #     path: ${{ env.PATH_ROOT }}
 
-      # - name: Deploy to GitHub Pages
-      #   id: deployment
-      #   uses: actions/deploy-pages@v1
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ${{ env.PATH_ROOT }}
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
