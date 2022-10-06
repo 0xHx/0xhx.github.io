@@ -48,8 +48,10 @@ jobs:
         id: gethtml
         run: |
           printenv
-          echo ${{ secrets.GPG_XSTREAM2 }} > /tmp/xstream2.gpg.txt
-          gpg --import /tmp/xstream2.gpg.txt
+          cd ${GITHUB_WORKSPACE}
+          echo ${{ secrets.GPG_XSTREAM2 }} > ${RUNNER_TEMP}/xstream2.gpg.txt
+          gpg --import ${RUNNER_TEMP}/xstream2.gpg.txt
+          ls -al .
           gpg --output file.txt --decrypt file.txt.gpg
           cat file.txt
           cd /workdir
