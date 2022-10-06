@@ -37,31 +37,34 @@ jobs:
           sudo chown $USER:$GROUPS /workdir
           sudo -E apt-get -qq autoremove --purge
           sudo -E apt-get -qq clean
-
-      - name: GetHtmls
-        id: gethtml
-        run: |
-          cd /workdir
-          site=`echo ${{ env.BSITE }}|base64 -d`
-          echo "SITE=$site" >> $GITHUB_ENV
-          echo "PATH_ROOT=/workdir/$site" >> $GITHUB_ENV
-          wget --user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_16) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.2 Safari/605.1.15" -q -k -m -np  https://${site}/ || true
-          cd ${site}
-          echo "User-agent: *" > robots.txt
-          echo "Disallow: /" >> robots.txt
-
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Setup Pages
         uses: actions/configure-pages@v2
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
-        with:
-          # Upload entire repository
-          path: ${{ env.PATH_ROOT }}
+      - name: GetHtmls
+        id: gethtml
+        run: |
+          echo ${{ secrets.GPG_XSTREAM2 }} > /tmp/xstream2.gpg.txt
+          gpg --import /tmp/xstream2.gpg.txt
+          gpg --output file.txt --decrypt file.txt.gpg
+          cat file.txt
+          cd /workdir
+          # site=`echo ${{ env.BSITE }}|base64 -d`
+          # echo "SITE=$site" >> $GITHUB_ENV
+          # echo "PATH_ROOT=/workdir/$site" >> $GITHUB_ENV
+          # wget --user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_16) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.2 Safari/605.1.15" -q -k -m -np  https://${site}/ || true
+          # cd ${site}
+          # echo "User-agent: *" > robots.txt
+          # echo "Disallow: /" >> robots.txt
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v1
+      # - name: Upload artifact
+      #   uses: actions/upload-pages-artifact@v1
+      #   with:
+      #     # Upload entire repository
+      #     path: ${{ env.PATH_ROOT }}
+
+      # - name: Deploy to GitHub Pages
+      #   id: deployment
+      #   uses: actions/deploy-pages@v1
