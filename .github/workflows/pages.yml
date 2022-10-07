@@ -31,6 +31,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
       - name: Init Ubuntu
         run: |
           sudo -E apt-get -qq update
@@ -53,16 +54,18 @@ jobs:
           cd /workdir
           site=`echo ${{ env.BSITE }}|base64 -d`
           echo "SITE=$site" >> $GITHUB_ENV
-          echo "PATH_ROOT=/workdir/$site" >> $GITHUB_ENV
+          PATH_ROOT="/workdir/$site"
+          echo "PATH_ROOT=${PATH_ROOT}" >> $GITHUB_ENV
           wget --user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_16) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.2 Safari/605.1.15" -q -k -m -np  https://${site}/ || true
-          cd ${site}
+          cd ${PATH_ROOT}
           echo "User-agent: *" > robots.txt
           echo "Disallow: /" >> robots.txt
-          # make config
-          mkdir /workdir/fast
-          echo "fast:`date`" > /workdir/fast/inde.html
-          
-
+          # add fast
+          mkdir -p ${PATH_ROOT}/fast
+          echo "fast:`date`" > ${PATH_ROOT}/fast/inde.html
+          # 创建用户文件夹
+          # 给出不同区域yaml(vms)、json(vls)版本列表
+          # 
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1

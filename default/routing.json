@@ -1,0 +1,51 @@
+{
+    "routing": {
+        "domainStrategy": "IPIfNonMatch",
+        "balancers": [{
+            "tag": "blc-vls",
+            "selector": ["vls", "vms", "goo"]
+        }, {
+            "tag": "blc-tor",
+            "selector": ["tor"]
+        }, {
+            "tag": "blc-opc",
+            "selector": ["opc"]
+        }],
+        "rules": [{
+            "_说明_": "一些域名绑定，直通",
+            "type": "field",
+            "domain": ["officecdnmac.microsoft.com"],
+            "outboundTag": "direct"
+        }, {
+            "_说明_": "爬虫通道绑定",
+            "type": "field",
+            "inboundTag": ["opc", "opch"],
+            "balancerTag": "blc-opc"
+        }, {
+            "type": "field",
+            "domain": ["frp.io"],
+            "outboundTag": "frp"
+        }, {
+            "type": "field",
+            "inboundTag": ["tor", "torh"],
+            "balancerTag": "blc-tor"
+        }, {
+            "type": "field",
+            "domain": ["onion", "tw"],
+            "balancerTag": "blc-tor"
+        }, {
+            "type": "field",
+            "inboundTag": ["socks", "http"],
+            "ip": ["geoip:private", "geoip:cn"],
+            "outboundTag": "direct"
+        }, {
+            "type": "field",
+            "domain": ["geosite:cn", "geosite:category-ads-all", "fastss5.com", "avlsec.com", "avlyun.org"],
+            "outboundTag": "direct"
+        }, {
+            "type": "field",
+            "inboundTag": ["socks", "http", "dns"],
+            "balancerTag": "blc-vls"
+        }]
+    }
+}
