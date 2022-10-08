@@ -81,12 +81,49 @@ jobs:
           mkdir -p pages/fast
           gpg --output user.txt --decrypt user.dat
           gpg --output bastip.txt --decrypt bastip.cfg
-          for user in `cat user.txt|cut -d, -f1` ; do
-            # 创建用户文件夹
-            echo ${user}
-            # 给出不同区域yaml(vms)、json(vls)版本列表
+          
+          for userline in `cat user.txt` ; do
+            # make dirs for user
+            user=`echo ${userline}|cut -d, -f1`
+            vls=`echo ${userline}|cut -d, -f2`
+            tor=`echo ${userline}|cut -d, -f3`
+            mkdir -p pages/fast/${vls}/
+            id=0
+            for cityline in `cat bastip.txt` ; do
+              id=$[$id+1]
+              # make city yaml(vms)、json(vls)
+              city=`echo ${cityline}|cut -d, -f1`
+              ips=`echo ${cityline}|cut -d, -f3`
+              pathyaml="pages/fast/${vls}/${city}.yaml"
+              pathjson="pages/fast/${vls}/${city}.json"
+              ## file head
+              echo "port: 7890" > ${pathyaml}
+              echo "allow-lan: false" >> ${pathyaml}
+              echo "bind-address: '*'" >> ${pathyaml}
+              echo "mode: rule" >> ${pathyaml}
+              echo "log-level: error" >> ${pathyaml}
+              echo "ipv6: false" >> ${pathyaml}
+              echo "routing-mark: 6688" >> ${pathyaml}
+              echo "proxies:" >> ${pathyaml}
+              jsonout="";
+              for ip in ${ips}; do
+                echo "  - {name: vms-${city}-${id} , server: ${ip}, port: 443, type: vmess, uuid: ${vls}, alterId: 0, cipher: auto, tls: true, xtls: true, udp: true, network: ws, ws-path: ${{ secrets.PATH_VMS }}, ws-headers: {Host: goo${id}${{ secrets.BASE_DOMAIN }}, User-Agent:${{ secrets.USERAGENT }} },flag: ${id}, alpn: http/1.1 }" >> ${pathyaml}
+                echo "  - {name: opc-${city}-${id} , server: ${ip}, port: 443, type: vmess, uuid: ${vls}, alterId: 0, cipher: auto, tls: true, xtls: true, udp: true, network: ws, ws-path: ${{ secrets.PATH_VMS }}, ws-headers: {Host: opc${id}${{ secrets.BASE_DOMAIN }}, User-Agent:${{ secrets.USERAGENT }} },flag: ${id}, alpn: http/1.1 }" >> ${pathyaml}
+                echo "  - {name: tor-${city}-${id} , server: ${ip}, port: 443, type: vmess, uuid: ${tor}, alterId: 0, cipher: auto, tls: true, xtls: true, udp: true, network: ws, ws-path: ${{ secrets.PATH_TORM }}, ws-headers: {Host: tor${id}${{ secrets.BASE_DOMAIN }}, User-Agent:${{ secrets.USERAGENT }} },flag: ${id}, alpn: http/1.1 }" >> ${pathyaml}
+                # goo
+                jsonout="{\"protocol\":\"vless\",\"tag\":\"vls-${city}-${id}\",\"settings\":{\"vnext\":[{\"address\":\"${ip}\",\"port\":443,\"users\":[{\"id\":\"${vls}\",\"encryption\":\"none\"}]}]},\"streamSettings\":{\"network\":\"ws\",\"security\":\"tls\",\"wsSettings\":{\"acceptProxyProtocol\":false,\"headers\":{\"Host\":\"goo${id}${{ secrets.BASE_DOMAIN }}\",\"User-Agent\":\"${{ secrets.USERAGENT }}\"},\"path\":\"${{ secrets.PATH_VLS }}\"},\"tlsSettings\":{\"alpn\":[\"http/1.1\"],\"serverName\":\"goo${id}${{ secrets.BASE_DOMAIN }}\",\"allowInsecure\": true,\"fingerprint\":\"randomized\"}}},${jsonout}"
+                # opc
+                jsonout="{\"protocol\":\"vless\",\"tag\":\"opc-${city}-${id}\",\"settings\":{\"vnext\":[{\"address\":\"${ip}\",\"port\":443,\"users\":[{\"id\":\"${vls}\",\"encryption\":\"none\"}]}]},\"streamSettings\":{\"network\":\"ws\",\"security\":\"tls\",\"wsSettings\":{\"acceptProxyProtocol\":false,\"headers\":{\"Host\":\"opc${id}${{ secrets.BASE_DOMAIN }}\",\"User-Agent\":\"${{ secrets.USERAGENT }}\"},\"path\":\"${{ secrets.PATH_VLS }}\"},\"tlsSettings\":{\"alpn\":[\"http/1.1\"],\"serverName\":\"opc${id}${{ secrets.BASE_DOMAIN }}\",\"allowInsecure\": true,\"fingerprint\":\"randomized\"}}},${jsonout}"
+                # tor
+                jsonout="{\"protocol\":\"vless\",\"tag\":\"tor-${city}-${id}\",\"settings\":{\"vnext\":[{\"address\":\"${ip}\",\"port\":443,\"users\":[{\"id\":\"${vls}\",\"encryption\":\"none\"}]}]},\"streamSettings\":{\"network\":\"ws\",\"security\":\"tls\",\"wsSettings\":{\"acceptProxyProtocol\":false,\"headers\":{\"Host\":\"tor${id}${{ secrets.BASE_DOMAIN }}\",\"User-Agent\":\"${{ secrets.USERAGENT }}\"},\"path\":\"${{ secrets.PATH_TOR }}\"},\"tlsSettings\":{\"alpn\":[\"http/1.1\"],\"serverName\":\"tor${id}${{ secrets.BASE_DOMAIN }}\",\"allowInsecure\": true,\"fingerprint\":\"randomized\"}}},${jsonout}"
+              done
+              # add frp
+              jsonout="{\"protocol\": \"vless\",\"tag\":\"frp\",\"settings\": {\"vnext\": [{\"address\":\"${{ secrets.IP_SHPORT }}\",\"port\": 443,\"users\":[{\"id\":\"${vls}\",\"encryption\": \"none\"}]}]},\"streamSettings\": {\"network\":\"ws\",\"security\": \"tls\",\"wsSettings\": {\"headers\":{\"Host\":\"${{ secrets.DM_SHPORT }}\",\"User-Agent\":\"${{ secrets.USERAGENT }}\"},\"path\":\"${{ secrets.PATH_VLS }}\"},\"tlsSettings\": {\"serverName\": \"${{ secrets.DM_SHPORT }}\",\"fingerprint\":\"randomized\",\"allowInsecure\":true}}},${jsonout}"
+              jsonother=`cat .github/other.json`
+              echo "{\"outbounds\":[${jsonout}${jsonother}]}"|jq . -c &>  default/outbounds.json
+              cat default/*.json|grep -v "#"|grep -v "//"|jq -s 'add' -S -c &> ${pathjson}
+            done
           done
-          # SH 为隐藏版本，根据情况决定是否启用
           echo "fast:`date`" > pages/fast/inde.html
           echo "::set-output name=status::success"
         shell: bash
