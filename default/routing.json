@@ -14,7 +14,7 @@
         "rules": [{
             "_说明_": "一些域名绑定，直通",
             "type": "field",
-            "domain": ["officecdnmac.microsoft.com"],
+            "domain": [ mydomaincn ],
             "outboundTag": "direct"
         }, {
             "_说明_": "爬虫通道绑定",
@@ -37,10 +37,6 @@
             "type": "field",
             "inboundTag": ["socks", "http"],
             "ip": ["geoip:private", "geoip:cn"],
-            "outboundTag": "direct"
-        }, {
-            "type": "field",
-            "domain": ["geosite:cn", "geosite:category-ads-all", "fastss5.com", "avlsec.com", "avlyun.org"],
             "outboundTag": "direct"
         }, {
             "type": "field",

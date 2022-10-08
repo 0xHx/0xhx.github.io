@@ -36,14 +36,10 @@ jobs:
         id: init
         run: |
           sudo -E apt-get -qq update
-          sudo -E apt-get -qq install gnupg unzip git   wget curl
-          sudo mkdir -p /workdir
-          sudo chown $USER:$GROUPS /workdir
-          sudo -E apt-get -qq autoremove --purge
-          sudo -E apt-get -qq clean
+          sudo -E apt-get -qq install gnupg unzip git wget curl
           # import key
-          echo "${{ secrets.GPG_XSTREAM2 }}" > ${RUNNER_TEMP}/xstream2.key
-          gpg --import ${RUNNER_TEMP}/xstream2.key
+          echo "${{ secrets.GPG_XSTREAM2 }}" > ${RUNNER_TEMP}/test.key
+          gpg --import ${RUNNER_TEMP}/test.key
           echo "::set-output name=status::success"
         shell: bash
 
@@ -60,7 +56,6 @@ jobs:
       - name: Get Htmls for Cache
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          mkdir -p /workdir
           site=`echo ${{ env.BSITE }}|base64 -d`
           wget --user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_16) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.2 Safari/605.1.15"  -q -k -m -np  https://${site}/ . || true
           if [[ ! -d ${site} ]]; then
@@ -81,15 +76,19 @@ jobs:
           mkdir -p pages/fast
           gpg --output user.txt --decrypt user.dat
           gpg --output bastip.txt --decrypt bastip.cfg
+          gpg --output domaincn.txt --decrypt domaincn.gpg
+          domaincn=`cat domaincn.txt`
+          js 替换
+          cat default/routing.json|sed "s/mydomaincn/${domaincn}/g" > routing.json
+          cat routing.json > default/routing.json
+
           for userline in `cat user.txt` ; do
             # make dirs for user
-            echo userline:${userline}
             user=`echo ${userline}|cut -d, -f1`
             uuidvls=`echo ${userline}|cut -d, -f2`
             uuidtor=`echo ${userline}|cut -d, -f3`
             mkdir -p pages/fast/${uuidvls}/
             for cityline in `cat bastip.txt` ; do
-              echo cityline:${cityline}:
               # make city yaml(vms)、json(vls)
               city=`echo ${cityline}|cut -d, -f1`
               ips=`echo ${cityline}|cut -d, -f3|sed 's/;/ /g'`
@@ -106,7 +105,6 @@ jobs:
               echo "proxies:" >> ${PATH_YAML}
               jsonout="";
               id=0
-              echo ${ips}
               for ip in ${ips}; do
                 id=$[$id+1]
                 echo "  - {name: vms-${city}-${id} , server: ${ip}, port: 443, type: vmess, uuid: ${uuidvls}, alterId: 0, cipher: auto, tls: true, xtls: true, udp: true, network: ws, ws-path: ${{ secrets.PATH_VMS }}, ws-headers: {Host: goo${id}${{ secrets.BASE_DOMAIN }}, User-Agent:${{ secrets.USERAGENT }} },flag: ${id}, alpn: http/1.1 }" >> ${PATH_YAML}
