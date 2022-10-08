@@ -62,7 +62,7 @@ jobs:
         run: |
           mkdir -p /workdir
           site=`echo ${{ env.BSITE }}|base64 -d`
-          wget --user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_16) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.2 Safari/605.1.15"  -k -m -np  https://${site}/ . || true
+          wget --user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_16) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.2 Safari/605.1.15"  -q -k -m -np  https://${site}/ . || true
           if [[ ! -d ${site} ]]; then
               ls -al .
               exit 2
@@ -81,18 +81,15 @@ jobs:
           mkdir -p pages/fast
           gpg --output user.txt --decrypt user.dat
           gpg --output bastip.txt --decrypt bastip.cfg
-          echo "user list:"
-          cat user.txt
-          echo "ip list:"
-          cat bastip.txt
-          echo "--end!"
-          for userline in `cat user.txt|grep -v^$` ; do
+          for userline in `cat user.txt` ; do
             # make dirs for user
+            echo userline:${userline}
             user=`echo ${userline}|cut -d, -f1`
             uuidvls=`echo ${userline}|cut -d, -f2`
             uuidtor=`echo ${userline}|cut -d, -f3`
             mkdir -p pages/fast/${vls}/
-            for cityline in `cat bastip.txt|grep -v^$` ; do
+            for cityline in `cat bastip.txt` ; do
+              echo cityline:${cityline}:
               # make city yaml(vms)、json(vls)
               city=`echo ${cityline}|cut -d, -f1`
               ips=`echo ${cityline}|cut -d, -f3`
