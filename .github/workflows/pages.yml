@@ -33,6 +33,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Init Ubuntu
+        id: init
         run: |
           sudo -E apt-get -qq update
           sudo -E apt-get -qq install gnupg unzip git   wget curl
@@ -40,38 +41,69 @@ jobs:
           sudo chown $USER:$GROUPS /workdir
           sudo -E apt-get -qq autoremove --purge
           sudo -E apt-get -qq clean
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v2
-
-      - name: GetHtmls
-        id: gethtml
-        run: |
           # import key
           echo "${{ secrets.GPG_XSTREAM2 }}" > ${RUNNER_TEMP}/xstream2.key
           gpg --import ${RUNNER_TEMP}/xstream2.key
-          # get html
-          cd /workdir
+          echo "::set-output name=status::success"
+        shell: bash
+
+      
+
+      - name: Cache Primes
+        id: cache
+        if: ( steps.init.outputs.status == 'success' && !cancelled() )
+        uses: actions/cache@v3
+        with:
+          path: html
+          key: pages
+
+      - name: Get Htmls for Cache
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p /workdir
           site=`echo ${{ env.BSITE }}|base64 -d`
-          echo "SITE=$site" >> $GITHUB_ENV
           PATH_ROOT="/workdir/$site"
-          echo "PATH_ROOT=${PATH_ROOT}" >> $GITHUB_ENV
-          wget --user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_16) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.2 Safari/605.1.15" -q -k -m -np  https://${site}/ || true
-          cd ${PATH_ROOT}
-          echo "User-agent: *" > robots.txt
-          echo "Disallow: /" >> robots.txt
+          wget --user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_16) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.2 Safari/605.1.15" -q -k -m -np  https://${site}/ /workdir/ || true
+          echo "User-agent: *" > ${PATH_ROOT}/robots.txt
+          echo "Disallow: /" >> ${PATH_ROOT}/robots.txt
+          mv $PATH_ROOT html
+        shell: bash
+
+      - name: Generate Yamls
+        id: yamls
+        if: ( steps.init.outputs.status == 'success' && !cancelled() )
+        run: |
           # add fast
-          mkdir -p ${PATH_ROOT}/fast
-          echo "fast:`date`" > ${PATH_ROOT}/fast/inde.html
-          # 创建用户文件夹
-          # 给出不同区域yaml(vms)、json(vls)版本列表
-          # 
+          cp -R html pages
+          mkdir -p pages/fast
+          gpg --output user.txt --decrypt user.dat
+          gpg --output bastip.txt --decrypt bastip.cfg
+          for user in `cat user.txt|cut -d, -f1` ; do
+            # 创建用户文件夹
+            echo ${user}
+            # 给出不同区域yaml(vms)、json(vls)版本列表
+          done
+          # SH 为隐藏版本，根据情况决定是否启用
+          echo "fast:`date`" > pages/fast/inde.html
+          echo "::set-output name=status::success"
+        shell: bash
+
+      - name: Setup Pages
+        if: ( !cancelled() )
+        uses: actions/configure-pages@v2
 
       - name: Upload artifact
+        if: ( !cancelled() )
         uses: actions/upload-pages-artifact@v1
         with:
-          path: ${{ env.PATH_ROOT }}
+          path: pages
 
       - name: Deploy to GitHub Pages
-        id: deployment
+        if: ( !cancelled() )
         uses: actions/deploy-pages@v1
+
+      - name: Delete Workflow Runs
+        uses: Mattraks/delete-workflow-runs@v2
+
+      - name: Clean Up
+        uses: AutoModality/action-clean@v1
