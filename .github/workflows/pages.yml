@@ -63,7 +63,7 @@ jobs:
           mkdir -p /workdir
           site=`echo ${{ env.BSITE }}|base64 -d`
           PATH_ROOT="/workdir/$site"
-          wget --user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_16) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.2 Safari/605.1.15" -q -k -m -np  https://${site}/ /workdir/ || true
+          wget --user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_16) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.2 Safari/605.1.15"  -k -m -np  https://${site}/ /workdir 
           echo "User-agent: *" > ${PATH_ROOT}/robots.txt
           echo "Disallow: /" >> ${PATH_ROOT}/robots.txt
           mv $PATH_ROOT html
