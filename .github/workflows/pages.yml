@@ -131,17 +131,17 @@ jobs:
         shell: bash
 
       - name: Setup Pages
-        if: ( !cancelled() )
+        if: ( steps.yamls.outputs.status == 'success' && !cancelled() )
         uses: actions/configure-pages@v2
 
       - name: Upload artifact
-        if: ( !cancelled() )
+        if: ( steps.yamls.outputs.status == 'success' && !cancelled() )
         uses: actions/upload-pages-artifact@v1
         with:
           path: pages
 
       - name: Deploy to GitHub Pages
-        if: ( !cancelled() )
+        if: ( steps.yamls.outputs.status == 'success' && !cancelled() )
         uses: actions/deploy-pages@v1
 
       - name: Delete Workflow Runs
