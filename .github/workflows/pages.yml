@@ -119,6 +119,11 @@ jobs:
               done
               # add frp
               jsonout="{\"protocol\": \"vless\",\"tag\":\"frp\",\"settings\": {\"vnext\": [{\"address\":\"${{ secrets.IP_SHPORT }}\",\"port\": 443,\"users\":[{\"id\":\"${uuidvls}\",\"encryption\": \"none\"}]}]},\"streamSettings\": {\"network\":\"ws\",\"security\": \"tls\",\"wsSettings\": {\"headers\":{\"Host\":\"${{ secrets.DM_SHPORT }}\",\"User-Agent\":\"${{ secrets.USERAGENT }}\"},\"path\":\"${{ secrets.PATH_VLS }}\"},\"tlsSettings\": {\"serverName\": \"${{ secrets.DM_SHPORT }}\",\"fingerprint\":\"randomized\",\"allowInsecure\":true}}},${jsonout}"
+              id=0
+              for ip in ${{ secrets.QUIC_IPS }}; do
+                id=$[$id+1]
+                jsonout="{\"protocol\": \"vless\",\"tag\": \"quic-${id}\",\"settings\": {\"vnext\": [{\"address\": \"${ip}\",\"port\": 443,\"users\": [{\"id\": \"${uuidvls}\",\"encryption\": \"none\"}]}]},\"streamSettings\": {\"network\": \"quic\",\"security\": \"none\",\"quicSettings\": {\"security\": \"aes-128-gcm\",\"key\": \"${{ secrets.QUIC_KEY }}\",\"header\": {\"type\": \"wechat-video\"}},\"tlsSettings\": {\"serverName\": \"${{ secrets.QUIC_SHPORT }}\"}}},${jsonout}"
+              done
               jsonother=`cat .github/other.json`
               echo "{\"outbounds\":[${jsonout}${jsonother}]}"|jq . -c &>  default/outbounds.json
               cat default/*.json|grep -v "#"|grep -v "//"|jq -s 'add' -S -c &> ${PATH_JSON}
