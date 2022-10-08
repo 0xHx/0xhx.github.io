@@ -87,7 +87,7 @@ jobs:
             user=`echo ${userline}|cut -d, -f1`
             uuidvls=`echo ${userline}|cut -d, -f2`
             uuidtor=`echo ${userline}|cut -d, -f3`
-            mkdir -p pages/fast/${vls}/
+            mkdir -p pages/fast/${uuidvls}/
             for cityline in `cat bastip.txt` ; do
               echo cityline:${cityline}:
               # make city yaml(vms)、json(vls)
