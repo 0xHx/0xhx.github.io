@@ -92,9 +92,9 @@ jobs:
               echo cityline:${cityline}:
               # make city yaml(vms)、json(vls)
               city=`echo ${cityline}|cut -d, -f1`
-              ips=`echo ${cityline}|cut -d, -f3`
-              PATH_YAML="pages/fast/${vls}/${city}.yaml"
-              PATH_JSON="pages/fast/${vls}/${city}.json"
+              ips=`echo ${cityline}|cut -d, -f3|sed 's/;/ /g'`
+              PATH_YAML="pages/fast/${uuidvls}/${city}.yaml"
+              PATH_JSON="pages/fast/${uuidvls}/${city}.json"
               ## file head
               echo "port: 7890" > ${PATH_YAML}
               echo "allow-lan: false" >> ${PATH_YAML}
@@ -106,6 +106,7 @@ jobs:
               echo "proxies:" >> ${PATH_YAML}
               jsonout="";
               id=0
+              echo ${ips}
               for ip in ${ips}; do
                 id=$[$id+1]
                 echo "  - {name: vms-${city}-${id} , server: ${ip}, port: 443, type: vmess, uuid: ${uuidvls}, alterId: 0, cipher: auto, tls: true, xtls: true, udp: true, network: ws, ws-path: ${{ secrets.PATH_VMS }}, ws-headers: {Host: goo${id}${{ secrets.BASE_DOMAIN }}, User-Agent:${{ secrets.USERAGENT }} },flag: ${id}, alpn: http/1.1 }" >> ${PATH_YAML}
