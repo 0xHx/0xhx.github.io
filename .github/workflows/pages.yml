@@ -3,8 +3,8 @@ name: Deploy static to Pages
 
 on:
   workflow_dispatch:
-  # push:
-  #   branches: ["main"]
+  push:
+    branches: ["main"]
   schedule:
     - cron: "12 4 * * 6"
 
@@ -77,8 +77,8 @@ jobs:
           gpg --output user.txt --decrypt user.dat
           gpg --output bastip.txt --decrypt bastip.cfg
           gpg --output domaincn.txt --decrypt domaincn.gpg
+
           domaincn=`cat domaincn.txt`
-          js 替换
           cat default/routing.json|sed "s/mydomaincn/${domaincn}/g" > routing.json
           cat routing.json > default/routing.json
 
@@ -89,7 +89,7 @@ jobs:
             uuidtor=`echo ${userline}|cut -d, -f3`
             mkdir -p pages/fast/${uuidvls}/
             for cityline in `cat bastip.txt` ; do
-              # make city yaml(vms)、json(vls)
+              ## make city yaml(vms)、json(vls)
               city=`echo ${cityline}|cut -d, -f1`
               ips=`echo ${cityline}|cut -d, -f3|sed 's/;/ /g'`
               PATH_YAML="pages/fast/${uuidvls}/${city}.yaml"
