@@ -74,9 +74,15 @@ jobs:
           # add fast
           cp -R html pages
           mkdir -p pages/fast
+          if [ ! -f user.cfg ]; then
+            cat user.dat > user.cfg
+          fi
           gpg --output user.txt --decrypt user.dat
           gpg --output bastip.txt --decrypt bastip.cfg
-          gpg --output domaincn.txt --decrypt domaincn.gpg
+          if [ ! -f domaincn.cfg ]; then
+            cat domaincn.gpg > domaincn.cfg
+          fi
+          gpg --output domaincn.txt --decrypt domaincn.cfg
 
           domaincn=`cat domaincn.txt`
           cat default/routing.json|sed "s/mydomaincn/${domaincn}/g" > routing.json
