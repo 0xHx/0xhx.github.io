@@ -94,12 +94,15 @@ jobs:
             uuidvls=`echo ${userline}|cut -d, -f2`
             uuidtor=`echo ${userline}|cut -d, -f3`
             mkdir -p pages/fast/${uuidvls}/
+            echo "${user}:"
             for cityline in `cat bastip.txt` ; do
               ## make city yaml(vms)、json(vls)
               city=`echo ${cityline}|cut -d, -f1`
               ips=`echo ${cityline}|cut -d, -f3|sed 's/;/ /g'`
               PATH_YAML="pages/fast/${uuidvls}/${city}.yaml"
               PATH_JSON="pages/fast/${uuidvls}/${city}.json"
+              echo "https://www.${{ secrets.BASE_DOMAIN }}/fast/${uuidvls}/${city}.yaml"
+              echo "https://www.${{ secrets.BASE_DOMAIN }}/fast/${uuidvls}/${city}.json"
               ## file head
               echo "port: 7890" > ${PATH_YAML}
               echo "allow-lan: false" >> ${PATH_YAML}
@@ -135,7 +138,7 @@ jobs:
               id=0
               for ip in ${{ secrets.QUIC_IPS }}; do
                 id=$[$id+1]
-                jsonout="{\"protocol\": \"vless\",\"tag\": \"qic-${id}\",\"settings\": {\"vnext\": [{\"address\": \"${ip}\",\"port\": 443,\"users\": [{\"id\": \"${uuidvls}\",\"encryption\": \"none\"}]}]},\"streamSettings\": {\"network\": \"quic\",\"security\": \"none\",\"quicSettings\": {\"security\": \"aes-128-gcm\",\"key\": \"${{ secrets.QUIC_KEY }}\",\"header\": {\"type\": \"wechat-video\"}},\"tlsSettings\": {\"serverName\": \"${{ secrets.QUIC_SHPORT }}\"}}},${jsonout}"
+                jsonout="{\"protocol\": \"vless\",\"tag\": \"qic-${id}\",\"settings\": {\"vnext\": [{\"address\": \"${ip}\",\"port\": 443,\"users\": [{\"id\": \"${uuidvls}\",\"encryption\": \"none\"}]}]},\"streamSettings\": {\"network\": \"quic\",\"security\": \"tls\",\"quicSettings\": {\"security\": \"aes-128-gcm\",\"key\": \"${{ secrets.QUIC_KEY }}\",\"header\": {\"type\": \"wechat-video\"}},\"tlsSettings\": {\"serverName\": \"${{ secrets.QUIC_SHPORT }}\"}}},${jsonout}"
               done
               jsonother=`cat .github/other.json`
               echo "{\"outbounds\":[${jsonout}${jsonother}]}"|jq . -c &>  default/outbounds.json
