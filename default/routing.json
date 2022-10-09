@@ -3,7 +3,7 @@
         "domainStrategy": "IPIfNonMatch",
         "balancers": [{
             "tag": "blc-vls",
-            "selector": ["vls", "vms", "goo","quic"]
+            "selector": ["vls", "vms", "goo","qic"]
         }, {
             "tag": "blc-tor",
             "selector": ["tor"]
