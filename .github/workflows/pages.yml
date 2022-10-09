@@ -138,7 +138,7 @@ jobs:
               id=0
               for ip in ${{ secrets.QUIC_IPS }}; do
                 id=$[$id+1]
-                jsonout="{\"protocol\": \"vless\",\"tag\": \"qic-${id}\",\"settings\": {\"vnext\": [{\"address\": \"${ip}\",\"port\": 443,\"users\": [{\"id\": \"${uuidvls}\",\"encryption\": \"none\"}]}]},\"streamSettings\": {\"network\": \"quic\",\"security\": \"tls\",\"quicSettings\": {\"security\": \"aes-128-gcm\",\"key\": \"${{ secrets.QUIC_KEY }}\",\"header\": {\"type\": \"wechat-video\"}},\"tlsSettings\": {\"serverName\": \"${{ secrets.QUIC_SHPORT }}\"}}},${jsonout}"
+                jsonout="{\"protocol\": \"vless\",\"tag\": \"qic-${id}\",\"settings\": {\"vnext\": [{\"address\": \"${ip}\",\"port\": 443,\"users\": [{\"id\": \"${uuidvls}\",\"encryption\": \"none\"}]}]},\"streamSettings\": {\"network\": \"quic\",\"security\": \"tls\",\"quicSettings\": {\"security\": \"aes-128-gcm\",\"key\": \"${{ secrets.QUIC_KEY }}\",\"header\": {\"type\": \"wechat-video\"}},\"tlsSettings\": {\"allowInsecure\":true,\"serverName\": \"${{ secrets.QUIC_SHPORT }}\"}}},${jsonout}"
               done
               jsonother=`cat .github/other.json`
               echo "{\"outbounds\":[${jsonout}${jsonother}]}"|jq . -c &>  default/outbounds.json

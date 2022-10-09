@@ -1,7 +1,7 @@
 {
     "log": {
         "loglevel": "warning",
-        "_loglevel": "info",
+        "_loglevel": "debug/info/warning/error/none",
         "dnsLog": true
     }
 }
