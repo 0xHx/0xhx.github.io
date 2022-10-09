@@ -101,8 +101,8 @@ jobs:
               ips=`echo ${cityline}|cut -d, -f3|sed 's/;/ /g'`
               PATH_YAML="pages/fast/${uuidvls}/${city}.yaml"
               PATH_JSON="pages/fast/${uuidvls}/${city}.json"
-              echo "https://www.${{ secrets.BASE_DOMAIN }}/fast/${uuidvls}/${city}.yaml"
-              echo "https://www.${{ secrets.BASE_DOMAIN }}/fast/${uuidvls}/${city}.json"
+              echo "/fast/${uuidvls}/${city}.yaml"
+              echo "/fast/${uuidvls}/${city}.json"
               ## file head
               echo "port: 7890" > ${PATH_YAML}
               echo "allow-lan: false" >> ${PATH_YAML}
@@ -139,8 +139,6 @@ jobs:
               for ip in ${{ secrets.QUIC_IPS }}; do
                 id=$[$id+1]
                 jsonout="{\"protocol\": \"vless\",\"tag\": \"qic-${id}\",\"settings\": {\"vnext\": [{\"address\": \"${ip}\",\"port\": 443,\"users\": [{\"id\": \"${uuidvls}\",\"encryption\": \"none\"}]}]},\"streamSettings\": {\"network\": \"quic\",\"security\": \"tls\",\"quicSettings\": {\"security\": \"aes-128-gcm\",\"key\": \"${{ secrets.QUIC_KEY }}\",\"header\": {\"type\": \"wechat-video\"}},\"tlsSettings\": {\"allowInsecure\":true,\"serverName\": \"${{ secrets.QUIC_SHPORT }}\"}}},${jsonout}"
-
-                echo "  - {name: qic-${id} , server: ${ip}, port: 443, type: vless, uuid: ${uuidvls}, alterId: 0, encryption: none, tls: true, network: quic, quicSecurity:aes-128-gcm, key:${{ secrets.QUIC_KEY }}, headerType:wechat-video, sni:${{ secrets.QUIC_SHPORT }},allowInsecure:true }" >> ${PATH_YAML}
               done
               jsonother=`cat .github/other.json`
               echo "{\"outbounds\":[${jsonout}${jsonother}]}"|jq . -c &>  default/outbounds.json
