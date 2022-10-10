@@ -113,7 +113,7 @@ jobs:
               else
                 for ip in ${ips}; do
                   id=$[$id+1]
-                  if [[ $id -lt 3 ]]; then
+                  if [[ $id -lt 4 ]]; then
                     # goo
                     jsonout="{\"protocol\":\"vless\",\"tag\":\"vls-${city}-${id}\",\"settings\":{\"vnext\":[{\"address\":\"${ip}\",\"port\":443,\"users\":[{\"id\":\"${uuidvls}\",\"encryption\":\"none\"}]}]},\"streamSettings\":{\"network\":\"ws\",\"security\":\"tls\",\"wsSettings\":{\"acceptProxyProtocol\":false,\"headers\":{\"Host\":\"goo${id}${{ secrets.BASE_DOMAIN }}\",\"User-Agent\":\"${{ secrets.USERAGENT }}\"},\"path\":\"${{ secrets.PATH_VLS }}\"},\"tlsSettings\":{\"alpn\":[\"http/1.1\"],\"serverName\":\"goo${id}${{ secrets.BASE_DOMAIN }}\",\"allowInsecure\": true,\"fingerprint\":\"randomized\"}}},${jsonout}"
                   
