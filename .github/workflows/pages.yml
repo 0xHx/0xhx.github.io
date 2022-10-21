@@ -90,6 +90,7 @@ jobs:
             uuidtor=`echo ${userline}|cut -d, -f3`
             mkdir -p pages/fast/${uuidvls}/
             echo "${user}:"
+            echo "`date`" > pages/fast/${uuidvls}/index.html
             for cityline in `cat bastip.txt` ; do
               ## make city yaml(vms)、json(vls)
               city=`echo ${cityline}|cut -d, -f1`
