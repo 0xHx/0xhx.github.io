@@ -72,14 +72,15 @@ jobs:
         id: yamls
         if: ( steps.init.outputs.status == 'success' && !cancelled() )
         run: |
-          # add fast
+          # add f
           cp -R html pages
-          mkdir -p pages/fast
+          mkdir -p pages/f
           gpg --output user.txt --decrypt user.cfg
           gpg --output bastip.txt --decrypt bastip.cfg
           gpg --output domaincn.txt --decrypt domaincn.cfg
 
           domaincn=`cat domaincn.txt`
+          export  TZ='Asia/Shanghai'
           cat default/routing.json|sed "s/mydomaincn/${domaincn}/g" > routing.json
           cat routing.json > default/routing.json
 
@@ -88,17 +89,17 @@ jobs:
             user=`echo ${userline}|cut -d, -f1`
             uuidvls=`echo ${userline}|cut -d, -f2`
             uuidtor=`echo ${userline}|cut -d, -f3`
-            mkdir -p pages/fast/${uuidvls}/
+            mkdir -p pages/f/${uuidvls}/
             echo "${user}:"
-            echo "`date`" > pages/fast/${uuidvls}/index.html
+            echo "`date`" > pages/f/${uuidvls}/index.html
             for cityline in `cat bastip.txt` ; do
               ## make city yaml(vms)、json(vls)
               city=`echo ${cityline}|cut -d, -f1`
               ips=`echo ${cityline}|cut -d, -f3|sed 's/;/ /g'`
-              PATH_YAML="pages/fast/${uuidvls}/${city}.yaml"
-              PATH_JSON="pages/fast/${uuidvls}/${city}.json"
-              echo "/fast/${uuidvls}/${city}.yaml"
-              echo "/fast/${uuidvls}/${city}.json"
+              PATH_YAML="pages/f/${uuidvls}/${city}.yaml"
+              PATH_JSON="pages/f/${uuidvls}/${city}.json"
+              echo "/f/${uuidvls}/${city}.yaml"
+              echo "/f/${uuidvls}/${city}.json"
               ## file head
               echo "port: 7890" > ${PATH_YAML}
               echo "allow-lan: false" >> ${PATH_YAML}
@@ -145,7 +146,7 @@ jobs:
               cat default/*.json|grep -v "#"|grep -v "//"|jq -s 'add' -S -c &> ${PATH_JSON}
             done
           done
-          echo "fast:`date`" > pages/fast/inde.html
+          echo "f:`date`" > pages/f/inde.html
           echo "status=success" >> $GITHUB_OUTPUT
         shell: bash
 
