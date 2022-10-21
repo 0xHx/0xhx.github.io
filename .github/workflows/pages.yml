@@ -40,7 +40,8 @@ jobs:
           # import key
           echo "${{ secrets.GPG_XSTREAM2 }}" > ${RUNNER_TEMP}/test.key
           gpg --import ${RUNNER_TEMP}/test.key
-          echo "::set-output name=status::success"
+          echo "status=success" >> $GITHUB_OUTPUT
+
         shell: bash
 
       
@@ -144,7 +145,7 @@ jobs:
             done
           done
           echo "fast:`date`" > pages/fast/inde.html
-          echo "::set-output name=status::success"
+          echo "status=success" >> $GITHUB_OUTPUT
         shell: bash
 
       - name: Setup Pages
