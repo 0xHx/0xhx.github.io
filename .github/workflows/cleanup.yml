@@ -1,0 +1,17 @@
+name: Clean up Jobs
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "50 1 * * *"
+
+jobs:
+  jobprepare:
+    name: Prepare for Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dayly Artifact Cleanup
+        uses: jimschubert/delete-artifacts-action@v1
+        with:
+          log_level: 'error'
+          min_bytes: '0'
