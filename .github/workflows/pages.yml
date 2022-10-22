@@ -81,7 +81,7 @@ jobs:
 
           domaincn=`cat domaincn.txt`
           export  TZ='Asia/Shanghai'
-          cat default/routing.json|sed "s/mydomaincn/${domaincn}/g" > routing.json
+          cat default/routing.json|sed "s/\"mydomaincn\"/${domaincn}/g" > routing.json
           cat routing.json > default/routing.json
 
           for userline in `cat user.txt` ; do

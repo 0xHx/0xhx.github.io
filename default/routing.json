@@ -17,7 +17,7 @@
         "rules": [{
             "_说明_": "一些域名绑定，直通",
             "type": "field",
-            "domain": [ mydomaincn ],
+            "domain": [ "mydomaincn" ],
             "outboundTag": "direct"
         }, {
             "_说明_": "爬虫通道绑定",
@@ -41,6 +41,10 @@
             "inboundTag": ["socks", "http"],
             "ip": ["geoip:private", "geoip:cn"],
             "outboundTag": "direct"
+        }, {
+            "type": "field",
+            "inboundTag": ["qic"],
+            "balancerTag": "blc-qic"
         }, {
             "type": "field",
             "inboundTag": ["socks", "http", "dns"],
