@@ -43,7 +43,7 @@
             "outboundTag": "direct"
         }, {
             "type": "field",
-            "inboundTag": ["qic"],
+            "inboundTag": ["qic","qich"],
             "balancerTag": "blc-qic"
         }, {
             "type": "field",
