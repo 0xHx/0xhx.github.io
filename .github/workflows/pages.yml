@@ -90,16 +90,56 @@ jobs:
             uuidvls=`echo ${userline}|cut -d, -f2`
             uuidtor=`echo ${userline}|cut -d, -f3`
             mkdir -p pages/f/${uuidvls}/
+            citys="wh ct sh"
             echo "${user}:"
             echo "`date`" > pages/f/${uuidvls}/index.html
-            for cityline in `cat bastip.txt` ; do
-              ## make city yaml(vms)、json(vls)
-              city=`echo ${cityline}|cut -d, -f1`
-              ips=`echo ${cityline}|cut -d, -f3|sed 's/;/ /g'`
+            ## 通过域名创建配置文件
+            for city in ${citys} ; do
               PATH_YAML="pages/f/${uuidvls}/${city}.yaml"
               PATH_JSON="pages/f/${uuidvls}/${city}.json"
               echo "/f/${uuidvls}/${city}.yaml"
               echo "/f/${uuidvls}/${city}.json"
+              echo "port: 7890" > ${PATH_YAML}
+              echo "allow-lan: false" >> ${PATH_YAML}
+              echo "bind-address: '*'" >> ${PATH_YAML}
+              echo "mode: rule" >> ${PATH_YAML}
+              echo "log-level: error" >> ${PATH_YAML}
+              echo "ipv6: false" >> ${PATH_YAML}
+              echo "routing-mark: 6688" >> ${PATH_YAML}
+              echo "proxies:" >> ${PATH_YAML}
+              jsonout="";
+              for (( id=0; id<=9; id++ )) ; do
+                # goo
+                jsonout="{\"protocol\":\"vless\",\"tag\":\"vls-${city}-${id}\",\"settings\":{\"vnext\":[{\"address\":\"cdn${id}.${city}${{ secrets.BASE_DOMAIN }}\",\"port\":443,\"users\":[{\"id\":\"${uuidvls}\",\"encryption\":\"none\"}]}]},\"streamSettings\":{\"network\":\"ws\",\"security\":\"tls\",\"wsSettings\":{\"acceptProxyProtocol\":false,\"headers\":{\"Host\":\"goo${id}${{ secrets.BASE_DOMAIN }}\",\"User-Agent\":\"${{ secrets.USERAGENT }}\"},\"path\":\"${{ secrets.PATH_VLS }}\"},\"tlsSettings\":{\"alpn\":[\"http/1.1\"],\"serverName\":\"goo${id}${{ secrets.BASE_DOMAIN }}\",\"allowInsecure\": true,\"fingerprint\":\"randomized\"}}},${jsonout}"
+                echo "  - {name: vms-${city}-${id} , server: cdn${id}.${city}${{ secrets.BASE_DOMAIN }}, port: 443, type: vmess, uuid: ${uuidvls}, alterId: 0,skip-cert-verify: true, mux:true,  cipher: auto, tls: true, network: ws, ws-path: ${{ secrets.PATH_VMS }}, ws-headers: {Host: goo${id}${{ secrets.BASE_DOMAIN }}, User-Agent:${{ secrets.USERAGENT }} },flag: ${id}, alpn: http/1.1 }" >> ${PATH_YAML}
+                # opc
+                jsonout="{\"protocol\":\"vless\",\"tag\":\"opc-${city}-${id}\",\"settings\":{\"vnext\":[{\"address\":\"cdn${id}.${city}${{ secrets.BASE_DOMAIN }}\",\"port\":443,\"users\":[{\"id\":\"${uuidvls}\",\"encryption\":\"none\"}]}]},\"streamSettings\":{\"network\":\"ws\",\"security\":\"tls\",\"wsSettings\":{\"acceptProxyProtocol\":false,\"headers\":{\"Host\":\"opc${id}${{ secrets.BASE_DOMAIN }}\",\"User-Agent\":\"${{ secrets.USERAGENT }}\"},\"path\":\"${{ secrets.PATH_VLS }}\"},\"tlsSettings\":{\"alpn\":[\"http/1.1\"],\"serverName\":\"opc${id}${{ secrets.BASE_DOMAIN }}\",\"allowInsecure\": true,\"fingerprint\":\"randomized\"}}},${jsonout}"
+                echo "  - {name: opc-${city}-${id} , server: cdn${id}.${city}${{ secrets.BASE_DOMAIN }}, port: 443, type: vmess, uuid: ${uuidvls}, alterId: 0,skip-cert-verify: true, mux:true,  cipher: auto, tls: true, network: ws, ws-path: ${{ secrets.PATH_VMS }}, ws-headers: {Host: opc${id}${{ secrets.BASE_DOMAIN }}, User-Agent:${{ secrets.USERAGENT }} },flag: ${id}, alpn: http/1.1 }" >> ${PATH_YAML}
+                # tor
+                jsonout="{\"protocol\":\"vless\",\"tag\":\"tor-${city}-${id}\",\"settings\":{\"vnext\":[{\"address\":\"cdn${id}.${city}${{ secrets.BASE_DOMAIN }}\",\"port\":443,\"users\":[{\"id\":\"${uuidtor}\",\"encryption\":\"none\"}]}]},\"streamSettings\":{\"network\":\"ws\",\"security\":\"tls\",\"wsSettings\":{\"acceptProxyProtocol\":false,\"headers\":{\"Host\":\"tor${id}${{ secrets.BASE_DOMAIN }}\",\"User-Agent\":\"${{ secrets.USERAGENT }}\"},\"path\":\"${{ secrets.PATH_TOR }}\"},\"tlsSettings\":{\"alpn\":[\"http/1.1\"],\"serverName\":\"tor${id}${{ secrets.BASE_DOMAIN }}\",\"allowInsecure\": true,\"fingerprint\":\"randomized\"}}},${jsonout}"
+                echo "  - {name: tor-${city}-${id} , server: cdn${id}.${city}${{ secrets.BASE_DOMAIN }}, port: 443, type: vmess, uuid: ${uuidtor}, alterId: 0,skip-cert-verify: true, mux:true,  cipher: auto, tls: true, network: ws, ws-path: ${{ secrets.PATH_TORM }}, ws-headers: {Host: tor${id}${{ secrets.BASE_DOMAIN }}, User-Agent:${{ secrets.USERAGENT }} },flag: ${id}, alpn: http/1.1 }" >> ${PATH_YAML}
+              done
+              id=0
+              # add quic
+              for ip in ${{ secrets.QUIC_IPS }}; do
+                id=$[$id+1]
+                jsonout="{\"protocol\": \"vless\",\"tag\": \"qic-${id}\",\"settings\": {\"vnext\": [{\"address\": \"${ip}\",\"port\": 443,\"users\": [{\"id\": \"${uuidvls}\",\"encryption\": \"none\"}]}]},\"streamSettings\": {\"network\": \"quic\",\"security\": \"tls\",\"quicSettings\": {\"security\": \"aes-128-gcm\",\"key\": \"${{ secrets.QUIC_KEY }}\",\"header\": {\"type\": \"wechat-video\"}},\"tlsSettings\": {\"allowInsecure\":true,\"serverName\": \"${{ secrets.QUIC_SHPORT }}\"}}},${jsonout}"
+              done
+              # add 
+              jsonother=`cat .github/other.json`
+              echo "{\"outbounds\":[${jsonout}${jsonother}]}"|jq . -c &>  default/outbounds.json
+              cat default/*.json|grep -v "#"|grep -v "//"|jq -s 'add' -S -c &> ${PATH_JSON}
+            done
+
+            ## 针对ip的配置文件
+            for cityline in `cat bastip.txt` ; do
+              ## make city yaml(vms)、json(vls)
+              city=`echo ${cityline}|cut -d, -f1`
+              ips=`echo ${cityline}|cut -d, -f3|sed 's/;/ /g'`
+              PATH_YAML="pages/f/${uuidvls}/${city}.ip.yaml"
+              PATH_JSON="pages/f/${uuidvls}/${city}.ip.json"
+              echo "/f/${uuidvls}/${city}.ip.yaml"
+              echo "/f/${uuidvls}/${city}.ip.json"
               ## file head
               echo "port: 7890" > ${PATH_YAML}
               echo "allow-lan: false" >> ${PATH_YAML}
