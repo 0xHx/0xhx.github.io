@@ -15,12 +15,12 @@
             "selector": ["opc"]
         }],
         "rules": [{
-            "_说明_": "一些域名绑定，直通",
+            "_": "一些域名绑定，直通",
             "type": "field",
             "domain": [ "mydomaincn" ],
             "outboundTag": "direct"
         }, {
-            "_说明_": "爬虫通道绑定",
+            "_": "爬虫通道绑定",
             "type": "field",
             "inboundTag": ["opc", "opch"],
             "balancerTag": "blc-opc"
@@ -29,12 +29,13 @@
             "domain": ["frp.io"],
             "outboundTag": "frp"
         }, {
+            "_": "tor 通道绑定",
             "type": "field",
             "inboundTag": ["tor", "torh"],
             "balancerTag": "blc-tor"
         }, {
             "type": "field",
-            "domain": ["onion", "tw"],
+            "domain": ["onion"],
             "balancerTag": "blc-tor"
         }, {
             "type": "field",
@@ -42,10 +43,12 @@
             "ip": ["geoip:private", "geoip:cn"],
             "outboundTag": "direct"
         }, {
+            "_": "qic 通道绑定",
             "type": "field",
             "inboundTag": ["qic","qich"],
             "balancerTag": "blc-qic"
         }, {
+            "_": "默认 通道绑定",
             "type": "field",
             "inboundTag": ["socks", "http", "dns"],
             "balancerTag": "blc-vls"

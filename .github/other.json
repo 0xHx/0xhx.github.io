@@ -1,5 +1,6 @@
 {
     "protocol": "freedom",
+    "domainStrategy" : "UseIP",
     "tag": "direct"
 }, {
     "protocol": "blackhole",
