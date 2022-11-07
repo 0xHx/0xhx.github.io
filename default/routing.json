@@ -35,7 +35,7 @@
             "balancerTag": "blc-tor"
         }, {
             "type": "field",
-            "inboundTag": ["socks", "http"],
+            "inboundTag": ["socks", "http","qic","qich"],
             "ip": ["geoip:private", "geoip:cn"],
             "outboundTag": "direct"
         }, {
