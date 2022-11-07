@@ -35,22 +35,18 @@
             "balancerTag": "blc-tor"
         }, {
             "type": "field",
-            "domain": ["onion"],
-            "balancerTag": "blc-tor"
-        }, {
-            "type": "field",
             "inboundTag": ["socks", "http"],
             "ip": ["geoip:private", "geoip:cn"],
             "outboundTag": "direct"
         }, {
             "_": "qic 通道绑定",
             "type": "field",
-            "inboundTag": ["qic","qich"],
+            "inboundTag": ["qic","qich", "dns"],
             "balancerTag": "blc-qic"
         }, {
             "_": "默认 通道绑定",
             "type": "field",
-            "inboundTag": ["socks", "http", "dns"],
+            "inboundTag": ["socks", "http"],
             "balancerTag": "blc-vls"
         }]
     }
