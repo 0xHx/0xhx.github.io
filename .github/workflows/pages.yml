@@ -97,8 +97,10 @@ jobs:
             for city in ${citys} ; do
               PATH_YAML="pages/f/${uuidvls}/${city}.yaml"
               PATH_JSON="pages/f/${uuidvls}/${city}.json"
+              PATH_LIST="pages/f/${uuidvls}/${city}.list"
               echo "/f/${uuidvls}/${city}.yaml"
               echo "/f/${uuidvls}/${city}.json"
+              echo "/f/${uuidvls}/${city}.list"
               echo "port: 7890" > ${PATH_YAML}
               echo "allow-lan: false" >> ${PATH_YAML}
               echo "bind-address: '*'" >> ${PATH_YAML}
@@ -107,11 +109,17 @@ jobs:
               echo "ipv6: false" >> ${PATH_YAML}
               echo "routing-mark: 6688" >> ${PATH_YAML}
               echo "proxies:" >> ${PATH_YAML}
+              echo "# list " > ${PATH_LIST}
               jsonout="";
               for (( id=0; id<=5; id++ )) ; do
                 # goo
                 jsonout="{\"protocol\":\"vless\",\"tag\":\"vls-${city}-${id}\",\"settings\":{\"vnext\":[{\"address\":\"cdn${id}.${city}${{ secrets.BASE_DOMAIN }}\",\"port\":443,\"users\":[{\"id\":\"${uuidvls}\",\"encryption\":\"none\"}]}]},\"streamSettings\":{\"network\":\"ws\",\"security\":\"tls\",\"wsSettings\":{\"acceptProxyProtocol\":false,\"headers\":{\"Host\":\"goo${id}${{ secrets.BASE_DOMAIN }}\",\"User-Agent\":\"${{ secrets.USERAGENT }}\"},\"path\":\"${{ secrets.PATH_VLS }}\"},\"tlsSettings\":{\"alpn\":[\"http/1.1\"],\"serverName\":\"goo${id}${{ secrets.BASE_DOMAIN }}\",\"allowInsecure\": true,\"fingerprint\":\"randomized\"}}},${jsonout}"
                 echo "  - {name: vms-${city}-${id} , server: cdn${id}.${city}${{ secrets.BASE_DOMAIN }}, port: 443, type: vmess, uuid: ${uuidvls}, alterId: 0,skip-cert-verify: true, mux:true,  cipher: auto, tls: true, network: ws, ws-path: ${{ secrets.PATH_VMS }}, ws-headers: {Host: goo${id}${{ secrets.BASE_DOMAIN }}, User-Agent:${{ secrets.USERAGENT }} },flag: ${id}, alpn: http/1.1 }" >> ${PATH_YAML}
+                
+                uuidserver=`echo auto:${uuidvls}@cdn${id}.${city}${{secrets.BASE_DOMAIN}}:443|base64`
+                # path
+                echo "vless://${uuidserver}?obfsParam=%7B%22Host%22%3A%22goo${id}${{secrets.BASE_DOMAIN}}%22%2C%22User-Agent%22%3A%22${{secrets.USERAGENT}}%22%7D&obfs=websocket&tls=1&tfo=1&mux=1&xtls=1&path=${{secrets.PATH_VLS}}" >> ${PATH_LIST}
+                
                 # opc
                 jsonout="{\"protocol\":\"vless\",\"tag\":\"opc-${city}-${id}\",\"settings\":{\"vnext\":[{\"address\":\"cdn${id}.${city}${{ secrets.BASE_DOMAIN }}\",\"port\":443,\"users\":[{\"id\":\"${uuidvls}\",\"encryption\":\"none\"}]}]},\"streamSettings\":{\"network\":\"ws\",\"security\":\"tls\",\"wsSettings\":{\"acceptProxyProtocol\":false,\"headers\":{\"Host\":\"opc${id}${{ secrets.BASE_DOMAIN }}\",\"User-Agent\":\"${{ secrets.USERAGENT }}\"},\"path\":\"${{ secrets.PATH_VLS }}\"},\"tlsSettings\":{\"alpn\":[\"http/1.1\"],\"serverName\":\"opc${id}${{ secrets.BASE_DOMAIN }}\",\"allowInsecure\": true,\"fingerprint\":\"randomized\"}}},${jsonout}"
                 echo "  - {name: opc-${city}-${id} , server: cdn${id}.${city}${{ secrets.BASE_DOMAIN }}, port: 443, type: vmess, uuid: ${uuidvls}, alterId: 0,skip-cert-verify: true, mux:true,  cipher: auto, tls: true, network: ws, ws-path: ${{ secrets.PATH_VMS }}, ws-headers: {Host: opc${id}${{ secrets.BASE_DOMAIN }}, User-Agent:${{ secrets.USERAGENT }} },flag: ${id}, alpn: http/1.1 }" >> ${PATH_YAML}
