@@ -90,7 +90,7 @@ jobs:
             uuidvls=`echo ${userline}|cut -d, -f2`
             uuidtor=`echo ${userline}|cut -d, -f3`
             mkdir -p pages/f/${uuidvls}/
-            citys="wh ct sh"
+            citys="wh sh"
             echo "${user}:"
             echo "`date`" > pages/f/${uuidvls}/index.html
             ## 通过域名创建配置文件
@@ -122,7 +122,7 @@ jobs:
                 
                 # opc
                 jsonout="{\"protocol\":\"vless\",\"tag\":\"opc-${city}-${id}\",\"settings\":{\"vnext\":[{\"address\":\"cdn${id}.${city}${{ secrets.BASE_DOMAIN }}\",\"port\":443,\"users\":[{\"id\":\"${uuidvls}\",\"encryption\":\"none\"}]}]},\"streamSettings\":{\"network\":\"ws\",\"security\":\"tls\",\"wsSettings\":{\"acceptProxyProtocol\":false,\"headers\":{\"Host\":\"opc${id}${{ secrets.BASE_DOMAIN }}\",\"User-Agent\":\"${{ secrets.USERAGENT }}\"},\"path\":\"${{ secrets.PATH_VLS }}\"},\"tlsSettings\":{\"alpn\":[\"http/1.1\"],\"serverName\":\"opc${id}${{ secrets.BASE_DOMAIN }}\",\"allowInsecure\": true,\"fingerprint\":\"randomized\"}}},${jsonout}"
-                echo "  - {name: opc-${city}-${id} , server: cdn${id}.${city}${{ secrets.BASE_DOMAIN }}, port: 443, type: vmess, uuid: ${uuidvls}, alterId: 0,skip-cert-verify: true, mux:true,  cipher: auto, tls: true, network: ws, ws-path: ${{ secrets.PATH_VMS }}, ws-headers: {Host: opc${id}${{ secrets.BASE_DOMAIN }}, User-Agent:${{ secrets.USERAGENT }} },flag: ${id}, alpn: http/1.1 }" >> ${PATH_YAML}
+                # echo "  - {name: opc-${city}-${id} , server: cdn${id}.${city}${{ secrets.BASE_DOMAIN }}, port: 443, type: vmess, uuid: ${uuidvls}, alterId: 0,skip-cert-verify: true, mux:true,  cipher: auto, tls: true, network: ws, ws-path: ${{ secrets.PATH_VMS }}, ws-headers: {Host: opc${id}${{ secrets.BASE_DOMAIN }}, User-Agent:${{ secrets.USERAGENT }} },flag: ${id}, alpn: http/1.1 }" >> ${PATH_YAML}
                 # tor
                 jsonout="{\"protocol\":\"vless\",\"tag\":\"tor-${city}-${id}\",\"settings\":{\"vnext\":[{\"address\":\"cdn${id}.${city}${{ secrets.BASE_DOMAIN }}\",\"port\":443,\"users\":[{\"id\":\"${uuidtor}\",\"encryption\":\"none\"}]}]},\"streamSettings\":{\"network\":\"ws\",\"security\":\"tls\",\"wsSettings\":{\"acceptProxyProtocol\":false,\"headers\":{\"Host\":\"tor${id}${{ secrets.BASE_DOMAIN }}\",\"User-Agent\":\"${{ secrets.USERAGENT }}\"},\"path\":\"${{ secrets.PATH_TOR }}\"},\"tlsSettings\":{\"alpn\":[\"http/1.1\"],\"serverName\":\"tor${id}${{ secrets.BASE_DOMAIN }}\",\"allowInsecure\": true,\"fingerprint\":\"randomized\"}}},${jsonout}"
                 echo "  - {name: tor-${city}-${id} , server: cdn${id}.${city}${{ secrets.BASE_DOMAIN }}, port: 443, type: vmess, uuid: ${uuidtor}, alterId: 0,skip-cert-verify: true, mux:true,  cipher: auto, tls: true, network: ws, ws-path: ${{ secrets.PATH_TORM }}, ws-headers: {Host: tor${id}${{ secrets.BASE_DOMAIN }}, User-Agent:${{ secrets.USERAGENT }} },flag: ${id}, alpn: http/1.1 }" >> ${PATH_YAML}
