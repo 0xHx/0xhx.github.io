@@ -72,7 +72,6 @@ jobs:
         id: yamls
         if: ( steps.init.outputs.status == 'success' && !cancelled() )
         run: |
-          # add f
           cp -R html pages
           mkdir -p pages/f
           gpg --output user.txt --decrypt user.cfg
@@ -127,6 +126,7 @@ jobs:
                 # vdn
                 jsonout="{\"protocol\":\"vless\",\"tag\":\"vdo-${city}-${id}\",\"settings\":{\"vnext\":[{\"address\":\"vdo-${id}-${city}${{ secrets.BASE_DOMAIN }}\",\"port\":443,\"users\":[{\"id\":\"${uuidvls}\",\"encryption\":\"none\"}]}]},\"streamSettings\":{\"network\":\"ws\",\"security\":\"tls\",\"wsSettings\":{\"acceptProxyProtocol\":false,\"headers\":{\"Host\":\"goo${id}${{ secrets.BASE_DOMAIN }}\",\"User-Agent\":\"${{ secrets.USERAGENT }}\"},\"path\":\"${{ secrets.PATH_VLS }}\"},\"tlsSettings\":{\"alpn\":[\"http/1.1\"],\"serverName\":\"goo${id}${{ secrets.BASE_DOMAIN }}\",\"allowInsecure\": true,\"fingerprint\":\"randomized\"}}},${jsonout}"
               done
+
               echo "quic"
               id=0
               # add quic
@@ -134,65 +134,11 @@ jobs:
                 id=$[$id+1]
                 jsonout="{\"protocol\": \"vless\",\"tag\": \"qic-${id}\",\"settings\": {\"vnext\": [{\"address\": \"${ip}\",\"port\": 443,\"users\": [{\"id\": \"${uuidvls}\",\"encryption\": \"none\"}]}]},\"streamSettings\": {\"network\": \"quic\",\"security\": \"tls\",\"quicSettings\": {\"security\": \"aes-128-gcm\",\"key\": \"${{ secrets.QUIC_KEY }}\",\"header\": {\"type\": \"wechat-video\"}},\"tlsSettings\": {\"allowInsecure\":true,\"serverName\": \"${{ secrets.QUIC_SHPORT }}\"}}},${jsonout}"
               done
-              # add 
+              # add other.json
               jsonother=`cat .github/other.json`
               echo "{\"outbounds\":[${jsonout}${jsonother}]}"|jq . -c &>  default/outbounds.json
               cat default/*.json|grep -v "#"|grep -v "//"|jq -s 'add' -S -c &> ${PATH_JSON}
-            done
-
-            ## 针对ip的配置文件
-            for cityline in `cat bastip.txt` ; do
-              ## make city yaml(vms)、json(vls)
-              city=`echo ${cityline}|cut -d, -f1`
-              ips=`echo ${cityline}|cut -d, -f3|sed 's/;/ /g'`
-              PATH_YAML="pages/f/${uuidvls}/${city}.ip.yaml"
-              PATH_JSON="pages/f/${uuidvls}/${city}.ip.json"
-              echo "/f/${uuidvls}/${city}.ip.yaml"
-              echo "/f/${uuidvls}/${city}.ip.json"
-              ## file head
-              echo "port: 7890" > ${PATH_YAML}
-              echo "allow-lan: false" >> ${PATH_YAML}
-              echo "bind-address: '*'" >> ${PATH_YAML}
-              echo "mode: rule" >> ${PATH_YAML}
-              echo "log-level: error" >> ${PATH_YAML}
-              echo "ipv6: false" >> ${PATH_YAML}
-              echo "routing-mark: 6688" >> ${PATH_YAML}
-              echo "proxies:" >> ${PATH_YAML}
-              jsonout="";
-              id=0
-              if [[ $city == 'sh' ]];then
-                echo "  - {name: vls-${city}-${id} , server: ${{ secrets.IP_SHPORT }}, port: 443, type: vless, uuid: ${uuidvls}, alterId: 0, skip-cert-verify: true, mux:true, encryption: none, tls: true, network: ws, ws-path: ${{ secrets.PATH_VLS }}, ws-headers: {Host: ${{ secrets.DM_SHPORT }}, User-Agent:${{ secrets.USERAGENT }} },flag: cn, alpn: http/1.1 }" >> ${PATH_YAML}
-              else
-                for ip in ${ips}; do
-                  id=$[$id+1]
-                  if [[ $id -lt 4 ]]; then
-                    # goo
-                    jsonout="{\"protocol\":\"vless\",\"tag\":\"vls-${city}-${id}\",\"settings\":{\"vnext\":[{\"address\":\"${ip}\",\"port\":443,\"users\":[{\"id\":\"${uuidvls}\",\"encryption\":\"none\"}]}]},\"streamSettings\":{\"network\":\"ws\",\"security\":\"tls\",\"wsSettings\":{\"acceptProxyProtocol\":false,\"headers\":{\"Host\":\"goo${id}${{ secrets.BASE_DOMAIN }}\",\"User-Agent\":\"${{ secrets.USERAGENT }}\"},\"path\":\"${{ secrets.PATH_VLS }}\"},\"tlsSettings\":{\"alpn\":[\"http/1.1\"],\"serverName\":\"goo${id}${{ secrets.BASE_DOMAIN }}\",\"allowInsecure\": true,\"fingerprint\":\"randomized\"}}},${jsonout}"
-                  
-                    echo "  - {name: vms-${city}-${id} , server: ${ip}, port: 443, type: vmess, uuid: ${uuidvls}, alterId: 0,skip-cert-verify: true, mux:true,  cipher: auto, tls: true, network: ws, ws-path: ${{ secrets.PATH_VMS }}, ws-headers: {Host: goo${id}${{ secrets.BASE_DOMAIN }}, User-Agent:${{ secrets.USERAGENT }} },flag: ${id}, alpn: http/1.1 }" >> ${PATH_YAML}
-                  elif [[ $id -lt 7 ]]; then
-                    # opc
-                    jsonout="{\"protocol\":\"vless\",\"tag\":\"opc-${city}-${id}\",\"settings\":{\"vnext\":[{\"address\":\"${ip}\",\"port\":443,\"users\":[{\"id\":\"${uuidvls}\",\"encryption\":\"none\"}]}]},\"streamSettings\":{\"network\":\"ws\",\"security\":\"tls\",\"wsSettings\":{\"acceptProxyProtocol\":false,\"headers\":{\"Host\":\"opc${id}${{ secrets.BASE_DOMAIN }}\",\"User-Agent\":\"${{ secrets.USERAGENT }}\"},\"path\":\"${{ secrets.PATH_VLS }}\"},\"tlsSettings\":{\"alpn\":[\"http/1.1\"],\"serverName\":\"opc${id}${{ secrets.BASE_DOMAIN }}\",\"allowInsecure\": true,\"fingerprint\":\"randomized\"}}},${jsonout}"
-                  
-                    echo "  - {name: opc-${city}-${id} , server: ${ip}, port: 443, type: vmess, uuid: ${uuidvls}, alterId: 0,skip-cert-verify: true, mux:true,  cipher: auto, tls: true, network: ws, ws-path: ${{ secrets.PATH_VMS }}, ws-headers: {Host: opc${id}${{ secrets.BASE_DOMAIN }}, User-Agent:${{ secrets.USERAGENT }} },flag: ${id}, alpn: http/1.1 }" >> ${PATH_YAML}
-                  else
-                    # tor
-                    jsonout="{\"protocol\":\"vless\",\"tag\":\"tor-${city}-${id}\",\"settings\":{\"vnext\":[{\"address\":\"${ip}\",\"port\":443,\"users\":[{\"id\":\"${uuidtor}\",\"encryption\":\"none\"}]}]},\"streamSettings\":{\"network\":\"ws\",\"security\":\"tls\",\"wsSettings\":{\"acceptProxyProtocol\":false,\"headers\":{\"Host\":\"tor${id}${{ secrets.BASE_DOMAIN }}\",\"User-Agent\":\"${{ secrets.USERAGENT }}\"},\"path\":\"${{ secrets.PATH_TOR }}\"},\"tlsSettings\":{\"alpn\":[\"http/1.1\"],\"serverName\":\"tor${id}${{ secrets.BASE_DOMAIN }}\",\"allowInsecure\": true,\"fingerprint\":\"randomized\"}}},${jsonout}"
-                  
-                    echo "  - {name: tor-${city}-${id} , server: ${ip}, port: 443, type: vmess, uuid: ${uuidtor}, alterId: 0,skip-cert-verify: true, mux:true,  cipher: auto, tls: true, network: ws, ws-path: ${{ secrets.PATH_TORM }}, ws-headers: {Host: tor${id}${{ secrets.BASE_DOMAIN }}, User-Agent:${{ secrets.USERAGENT }} },flag: ${id}, alpn: http/1.1 }" >> ${PATH_YAML}
-                  fi
-                done
-                # add frp
-                jsonout="{\"protocol\": \"vless\",\"tag\":\"frp\",\"settings\": {\"vnext\": [{\"address\":\"${{ secrets.IP_SHPORT }}\",\"port\": 443,\"users\":[{\"id\":\"${uuidvls}\",\"encryption\": \"none\"}]}]},\"streamSettings\": {\"network\":\"ws\",\"security\": \"tls\",\"wsSettings\": {\"headers\":{\"Host\":\"${{ secrets.DM_SHPORT }}\",\"User-Agent\":\"${{ secrets.USERAGENT }}\"},\"path\":\"${{ secrets.PATH_VLS }}\"},\"tlsSettings\": {\"serverName\": \"${{ secrets.DM_SHPORT }}\",\"fingerprint\":\"randomized\",\"allowInsecure\":true}}},${jsonout}"
-                id=0
-                for ip in ${{ secrets.QUIC_IPS }}; do
-                  id=$[$id+1]
-                  jsonout="{\"protocol\": \"vless\",\"tag\": \"qic-${id}\",\"settings\": {\"vnext\": [{\"address\": \"${ip}\",\"port\": 443,\"users\": [{\"id\": \"${uuidvls}\",\"encryption\": \"none\"}]}]},\"streamSettings\": {\"network\": \"quic\",\"security\": \"tls\",\"quicSettings\": {\"security\": \"aes-128-gcm\",\"key\": \"${{ secrets.QUIC_KEY }}\",\"header\": {\"type\": \"wechat-video\"}},\"tlsSettings\": {\"allowInsecure\":true,\"serverName\": \"${{ secrets.QUIC_SHPORT }}\"}}},${jsonout}"
-                done
-              fi
-              jsonother=`cat .github/other.json`
-              echo "{\"outbounds\":[${jsonout}${jsonother}]}"|jq . -c &>  default/outbounds.json
-              cat default/*.json|grep -v "#"|grep -v "//"|jq -s 'add' -S -c &> ${PATH_JSON}
+              echo "ok"
             done
           done
           echo "f:`date`" > pages/f/inde.html
