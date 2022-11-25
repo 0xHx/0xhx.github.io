@@ -1,14 +1,14 @@
-{
-    "_dns": {
-        "hosts": {
-            "dns.google": ["8.8.8.8", "8.8.4.4"]
-        },
-        "servers": ["1.1.1.1", "8.8.8.8", "localhost"],
-        "clientIp": "202.103.24.68",
-        "queryStrategy": "UseIP",
-        "disableCache": false,
-        "disableFallback": false,
-        "disableFallbackIfMatch": false,
-        "tag": "dns"
-    }
-}
+# {
+#    "dns": {
+#        "hosts": {
+#            "dns.google": ["8.8.8.8", "8.8.4.4"]
+#        },
+#        "servers": ["1.1.1.1", "8.8.8.8", "localhost"],
+#        "clientIp": "202.103.24.68",
+#        "queryStrategy": "UseIP",
+#        "disableCache": false,
+#        "disableFallback": false,
+#        "disableFallbackIfMatch": false,
+#        "tag": "dns"
+#    }
+#}
