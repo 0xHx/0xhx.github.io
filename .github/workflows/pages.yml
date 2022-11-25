@@ -127,7 +127,7 @@ jobs:
               # add 
               jsonother=`cat .github/other.json`
               echo "{\"outbounds\":[${jsonout}${jsonother}]}"|jq . -c &>  default/outbounds.json
-              cat default/*.json|grep -v "#"|grep -v "//"|jq -s 'add' -S -c > ${PATH_JSON}
+              cat default/*.json|jq -s 'add' -S -c > ${PATH_JSON}
               cat ${PATH_JSON}|jq .
               set +x
             done
