@@ -34,7 +34,7 @@
          }, {
             "_": "video 通道",
             "type": "field",
-             "domain": "video"
+             "domain": "video",
             "balancerTag": "blc-vdo"
         }, {
             "_": "tor 通道绑定",
